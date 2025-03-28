@@ -26,4 +26,4 @@ tzdata==2025.2
 Werkzeug==3.0.6
 zipp==3.20.2
 gunicorn==20.1.0  # or the latest version
-twilio==7.18.0  # or the latest version
+twilio==6.0.0  # Or another version from the available list
