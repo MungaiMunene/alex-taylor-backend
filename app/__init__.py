@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate  # ✅ ADD THIS
 
@@ -14,6 +14,11 @@ def create_app():
     # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db)  # ✅ INITIALIZE MIGRATIONS
+
+    # Define root route
+    @app.route('/')
+    def home():
+        return 'Welcome to Alex Taylor!'  # or you can render an HTML page
 
     # Import blueprints
     from app.routes.clients import clients_bp
