@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from app.routes.auth import auth_bp  # Import the authentication blueprint
 from flask_migrate import Migrate  # For database migrations
 from dotenv import load_dotenv  # To load environment variables from the .env file
 import os
