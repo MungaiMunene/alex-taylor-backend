@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler  # Import the 
 from datetime import datetime
 from twilio.rest import Client
 import openai
+from zoneinfo import ZoneInfo
 
 # Initialize extensions
 db = SQLAlchemy()
