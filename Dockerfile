@@ -26,3 +26,5 @@ EXPOSE 5000
 
 # Command to run the app
 CMD ["gunicorn", "-w", "4", "app:create_app()"]
+# Install system dependencies for building Python packages
+RUN apt-get update && apt-get install -y build-essential python3-dev libffi-dev libssl-dev gcc
