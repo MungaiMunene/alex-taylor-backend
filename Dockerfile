@@ -25,6 +25,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5000
 
 # Command to run the app
-CMD ["gunicorn", "-w", "4", "app:create_app()"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
 # Install system dependencies for building Python packages
 RUN apt-get update && apt-get install -y build-essential python3-dev libffi-dev libssl-dev gcc
