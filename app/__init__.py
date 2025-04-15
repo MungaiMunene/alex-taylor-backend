@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 from twilio.rest import Client
 import openai
-from flask_cors import CORS  # ✅ Added CORS
+from flask_cors import CORS  # ✅ CORS for cross-origin frontend requests
 from zoneinfo import ZoneInfo
 
 # Initialize extensions
@@ -16,40 +16,43 @@ db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
 
-# Initialize Twilio client
+# Twilio config
 TWILIO_SID = os.getenv('TWILIO_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 twilio_client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
 
-# OpenAI API Key
+# OpenAI config
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 def create_app():
-    # Load environment variables from the .env file
+    # Load environment variables
     load_dotenv()
 
     app = Flask(__name__)
 
-    # Flask configurations
+    # Core configuration
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///app.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_secret_key_here')
 
-    # ✅ Enable CORS for Netlify and local dev
+    # ✅ CORS configuration (updated)
     CORS(app, resources={r"/api/*": {
         "origins": [
             "https://clinquant-longma-1b51ec.netlify.app",
             "http://127.0.0.1:5173"
-        ]
+        ],
+        "supports_credentials": True,
+        "allow_headers": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     }})
 
-    # Initialize extensions with app
+    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
 
-    # Set up APScheduler for background tasks
+    # Scheduler setup
     scheduler = BackgroundScheduler()
     scheduler.start()
 
@@ -57,7 +60,7 @@ def create_app():
     def home():
         return 'Welcome to Alex Taylor!'
 
-    # Import and register blueprints
+    # Register blueprints
     from app.routes.clients import clients_bp
     from app.routes.projects import projects_bp
     from app.routes.metrics import metrics_bp
@@ -74,25 +77,23 @@ def create_app():
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(auth_bp)
 
-    # Background task: Send motivational message
+    # Background task
     def send_morning_message():
         print(f"Sending morning message at {datetime.now()}")
-
         openai.api_key = OPENAI_API_KEY
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt="Generate a motivational message for a productive day.",
-            max_tokens=60
-        )
-        message = response.choices[0].text.strip()
-
         try:
-            message = twilio_client.messages.create(
+            response = openai.Completion.create(
+                engine="text-davinci-003",
+                prompt="Generate a motivational message for a productive day.",
+                max_tokens=60
+            )
+            message = response.choices[0].text.strip()
+            sent = twilio_client.messages.create(
                 body=message,
                 from_=TWILIO_PHONE_NUMBER,
                 to="+254768651228"
             )
-            print(f"Message sent: {message.sid}")
+            print(f"Message sent: {sent.sid}")
         except Exception as e:
             print(f"Failed to send message: {str(e)}")
 
