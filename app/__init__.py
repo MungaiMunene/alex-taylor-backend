@@ -86,7 +86,7 @@ def create_app():
             message = twilio_client.messages.create(
                 body=message,
                 from_=TWILIO_PHONE_NUMBER,
-                to="your_phone_number"  # Replace with the recipient's phone number
+                to="+254768651228"  # Replace with the recipient's phone number
             )
             print(f"Message sent: {message.sid}")
         except Exception as e:
