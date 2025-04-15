@@ -3,7 +3,7 @@
 from flask import Blueprint, jsonify, request
 from app import db
 from app.models import Project
-from datetime import datetime
+from datetime import datetime, date
 
 projects_bp = Blueprint('projects', __name__, url_prefix='/api/projects')
 
@@ -64,3 +64,28 @@ def get_project(id):
         "start_date": project.start_date.isoformat(),
         "end_date": project.end_date.isoformat()
     }), 200
+
+# ✅ Seed sample projects
+@projects_bp.route('/seed', methods=['POST'])
+def seed_projects():
+    sample_projects = [
+        Project(
+            name='Alex Launch',
+            description='Initial MVP rollout',
+            client_id=1,
+            start_date=date(2025, 4, 1),
+            end_date=date(2025, 4, 30)
+        ),
+        Project(
+            name='Metric Engine',
+            description='Tracking & analytics core',
+            client_id=1,
+            start_date=date(2025, 5, 1),
+            end_date=date(2025, 6, 30)
+        )
+    ]
+
+    db.session.bulk_save_objects(sample_projects)
+    db.session.commit()
+
+    return jsonify({"message": "Sample projects seeded!"}), 201
