@@ -1,13 +1,14 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate  # For database migrations
-from dotenv import load_dotenv  # To load environment variables from the .env file
+from flask_migrate import Migrate
+from dotenv import load_dotenv
 import os
 from flask_jwt_extended import JWTManager
-from apscheduler.schedulers.background import BackgroundScheduler  # Import the scheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 from twilio.rest import Client
 import openai
+from flask_cors import CORS  # ✅ Added CORS
 from zoneinfo import ZoneInfo
 
 # Initialize extensions
@@ -19,7 +20,6 @@ jwt = JWTManager()
 TWILIO_SID = os.getenv('TWILIO_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
-
 twilio_client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
 
 # OpenAI API Key
@@ -32,47 +32,52 @@ def create_app():
     app = Flask(__name__)
 
     # Flask configurations
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///app.db')  # Database URI
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tracking
-    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_secret_key_here')  # Secret key for JWT
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///app.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_secret_key_here')
+
+    # ✅ Enable CORS for Netlify and local dev
+    CORS(app, resources={r"/api/*": {
+        "origins": [
+            "https://clinquant-longma-1b51ec.netlify.app",
+            "http://127.0.0.1:5173"
+        ]
+    }})
 
     # Initialize extensions with app
     db.init_app(app)
-    migrate.init_app(app, db)  # Initialize database migrations
-    jwt.init_app(app)  # Initialize JWT for authentication
+    migrate.init_app(app, db)
+    jwt.init_app(app)
 
     # Set up APScheduler for background tasks
     scheduler = BackgroundScheduler()
-    scheduler.start()  # Start the scheduler
+    scheduler.start()
 
-    # Define root route
     @app.route('/')
     def home():
-        return 'Welcome to Alex Taylor!'  # Placeholder response, can be replaced with a template
+        return 'Welcome to Alex Taylor!'
 
-    # Import blueprints for different modules
+    # Import and register blueprints
     from app.routes.clients import clients_bp
     from app.routes.projects import projects_bp
     from app.routes.metrics import metrics_bp
     from app.routes.reports import reports_bp
     from app.routes.drivers import drivers_bp
     from app.routes.whatsapp import whatsapp_bp
-    from app.routes.auth import auth_bp  # Import the authentication blueprint
+    from app.routes.auth import auth_bp
 
-    # Register blueprints to handle different routes
     app.register_blueprint(clients_bp)
     app.register_blueprint(projects_bp)
     app.register_blueprint(metrics_bp)
     app.register_blueprint(reports_bp)
     app.register_blueprint(drivers_bp)
     app.register_blueprint(whatsapp_bp)
-    app.register_blueprint(auth_bp)  # Register the auth blueprint
+    app.register_blueprint(auth_bp)
 
-    # Define a background task to send morning messages
+    # Background task: Send motivational message
     def send_morning_message():
-        print(f"Sending morning message at {datetime.now()}")  # Replace with actual message-sending logic
-        
-        # Generate the message using OpenAI API
+        print(f"Sending morning message at {datetime.now()}")
+
         openai.api_key = OPENAI_API_KEY
         response = openai.Completion.create(
             engine="text-davinci-003",
@@ -81,18 +86,16 @@ def create_app():
         )
         message = response.choices[0].text.strip()
 
-        # Send the message using Twilio
         try:
             message = twilio_client.messages.create(
                 body=message,
                 from_=TWILIO_PHONE_NUMBER,
-                to="+254768651228"  # Replace with the recipient's phone number
+                to="+254768651228"
             )
             print(f"Message sent: {message.sid}")
         except Exception as e:
             print(f"Failed to send message: {str(e)}")
 
-    # Add the background task to the scheduler to run daily at 8:00 AM
     scheduler.add_job(func=send_morning_message, trigger="cron", hour=8, minute=0)
 
     return app
