@@ -68,7 +68,9 @@ def create_app():
     from app.routes.drivers import drivers_bp
     from app.routes.whatsapp import whatsapp_bp
     from app.routes.auth import auth_bp
+    from app.routes.contracts import contracts_bp  # 👈🏾 NEW: Import contracts blueprint
 
+    # ✅ Register all blueprints
     app.register_blueprint(clients_bp)
     app.register_blueprint(projects_bp)
     app.register_blueprint(metrics_bp)
@@ -76,6 +78,7 @@ def create_app():
     app.register_blueprint(drivers_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(contracts_bp)  # 👈🏾 NEW: Register contracts blueprint
 
     # Background task
     def send_morning_message():
