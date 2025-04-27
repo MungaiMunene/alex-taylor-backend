@@ -10,6 +10,9 @@ from twilio.rest import Client
 import openai
 from flask_cors import CORS  # ✅ CORS for cross-origin frontend requests
 from zoneinfo import ZoneInfo
+# In app/__init__.py
+from app.routes.user_profile import user_profile_bp
+app.register_blueprint(user_profile_bp)
 
 # Initialize extensions
 db = SQLAlchemy()

@@ -110,7 +110,7 @@ class Contract(db.Model):
     status = db.Column(db.String(20), default='Active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # --- NEW Many-to-Many Relationship to Productivity Drivers ---
+    # --- Many-to-Many Relationship to Productivity Drivers ---
     drivers = db.relationship('ProductivityDriver', secondary=contract_driver_link, backref='contracts')
 
     def serialize(self):
@@ -136,6 +136,43 @@ class Contract(db.Model):
             "conflict_of_interest_required": self.conflict_of_interest_required,
             "non_performance_penalties": self.non_performance_penalties,
             "termination_notice_days": self.termination_notice_days,
+            "status": self.status,
+            "created_at": str(self.created_at)
+        }
+
+# --- Updated User Model ---
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    role = db.Column(db.String(50), default="Admin")
+    honors = db.Column(db.String(250))
+    life_areas = db.Column(db.Text)
+    life_priorities_2025 = db.Column(db.Text)
+    life_priorities_2030 = db.Column(db.Text)
+    preferred_interaction_style = db.Column(db.Text)
+    daily_rhythm = db.Column(db.Text)
+    long_term_integration = db.Column(db.Text)
+    dynamic_growth_allowed = db.Column(db.Boolean, default=True)
+    status = db.Column(db.String(20), default='Active')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "role": self.role,
+            "honors": self.honors,
+            "life_areas": self.life_areas,
+            "life_priorities_2025": self.life_priorities_2025,
+            "life_priorities_2030": self.life_priorities_2030,
+            "preferred_interaction_style": self.preferred_interaction_style,
+            "daily_rhythm": self.daily_rhythm,
+            "long_term_integration": self.long_term_integration,
+            "dynamic_growth_allowed": self.dynamic_growth_allowed,
             "status": self.status,
             "created_at": str(self.created_at)
         }
