@@ -1,5 +1,3 @@
-# app/__init__.py
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -41,15 +39,16 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_secret_key_here')
 
-    # CORS configuration with specific allowed origins
+    # Enhanced CORS configuration with specific allowed origins and methods
     CORS(app, resources={r"/api/*": {
         "origins": [
-            "http://localhost:5174",  # Updated to match your actual Vite dev server port
+            "http://localhost:5174",  # Local dev server (if any)
             "https://alex-taylor-frontend-8hbc.vercel.app"  # Your live frontend on Vercel
         ],
-        "supports_credentials": True,
-        "allow_headers": "*",
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Ensure all necessary HTTP methods are allowed
+        "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],  # Allow necessary headers
+        "expose_headers": ["Authorization"],  # Expose headers if using tokens or cookies
+        "supports_credentials": True  # Support credentials (cookies, auth headers)
     }})
 
     # Initialize extensions
