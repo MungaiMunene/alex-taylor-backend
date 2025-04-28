@@ -41,16 +41,8 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_secret_key_here')
 
-    # CORS configuration
-    CORS(app, resources={r"/api/*": {
-        "origins": [
-            "https://clinquant-longma-1b51ec.netlify.app",
-            "http://127.0.0.1:5173"
-        ],
-        "supports_credentials": True,
-        "allow_headers": "*",
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    }})
+    # 🛠️ Updated CORS configuration for localhost and deployed frontend
+    CORS(app, origins="*", supports_credentials=True)
 
     # Initialize extensions
     db.init_app(app)
@@ -65,7 +57,7 @@ def create_app():
     def home():
         return 'Welcome to Alex Taylor!'
 
-    # ✅ Import and register all blueprints inside create_app
+    # ✅ Import and register all blueprints
     from app.routes.clients import clients_bp
     from app.routes.projects import projects_bp
     from app.routes.metrics import metrics_bp
@@ -85,7 +77,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(contracts_bp)
     app.register_blueprint(user_profile_bp)
-    app.register_blueprint(chat_bp)  # ✅ Finally register chat blueprint
+    app.register_blueprint(chat_bp)  # ✅ Chat Blueprint
 
     # Morning message task
     def send_morning_message():
