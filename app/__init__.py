@@ -44,8 +44,8 @@ def create_app():
     # CORS configuration with specific allowed origins
     CORS(app, resources={r"/api/*": {
         "origins": [
-            "http://localhost:5173",  # Local development URL
-            "https://your-frontend-url.com"  # Replace with your deployed frontend URL
+            "http://localhost:5174",  # Updated to match your actual Vite dev server port
+            "https://your-frontend-url.com"  # Placeholder for production (replace later)
         ],
         "supports_credentials": True,
         "allow_headers": "*",
