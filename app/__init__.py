@@ -41,15 +41,23 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_secret_key_here')
 
-    # 🛠️ Updated CORS configuration for localhost and deployed frontend
-    CORS(app, origins="*", supports_credentials=True)
+    # CORS configuration with specific allowed origins
+    CORS(app, resources={r"/api/*": {
+        "origins": [
+            "http://localhost:5173",  # Local development URL
+            "https://your-frontend-url.com"  # Replace with your deployed frontend URL
+        ],
+        "supports_credentials": True,
+        "allow_headers": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    }})
 
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
 
-    # Scheduler setup
+    # Scheduler setup for morning messages
     scheduler = BackgroundScheduler()
     scheduler.start()
 
@@ -57,7 +65,7 @@ def create_app():
     def home():
         return 'Welcome to Alex Taylor!'
 
-    # ✅ Import and register all blueprints
+    # Import and register blueprints
     from app.routes.clients import clients_bp
     from app.routes.projects import projects_bp
     from app.routes.metrics import metrics_bp
@@ -77,7 +85,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(contracts_bp)
     app.register_blueprint(user_profile_bp)
-    app.register_blueprint(chat_bp)  # ✅ Chat Blueprint
+    app.register_blueprint(chat_bp)  # Register the chat blueprint
 
     # Morning message task
     def send_morning_message():
