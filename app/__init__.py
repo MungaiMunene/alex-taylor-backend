@@ -1,4 +1,6 @@
-from flask import Flask, render_template
+# app/__init__.py
+
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -8,11 +10,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 from twilio.rest import Client
 import openai
-from flask_cors import CORS  # ✅ CORS for cross-origin frontend requests
+from flask_cors import CORS
 from zoneinfo import ZoneInfo
-# In app/__init__.py
-from app.routes.user_profile import user_profile_bp
-app.register_blueprint(user_profile_bp)
+
+# Import Blueprints at top level
+from app.routes.chat import chat_bp
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -39,7 +41,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your_secret_key_here')
 
-    # ✅ CORS configuration (updated)
+    # CORS configuration
     CORS(app, resources={r"/api/*": {
         "origins": [
             "https://clinquant-longma-1b51ec.netlify.app",
@@ -63,7 +65,7 @@ def create_app():
     def home():
         return 'Welcome to Alex Taylor!'
 
-    # Register blueprints
+    # ✅ Import and register all blueprints inside create_app
     from app.routes.clients import clients_bp
     from app.routes.projects import projects_bp
     from app.routes.metrics import metrics_bp
@@ -71,9 +73,9 @@ def create_app():
     from app.routes.drivers import drivers_bp
     from app.routes.whatsapp import whatsapp_bp
     from app.routes.auth import auth_bp
-    from app.routes.contracts import contracts_bp  # 👈🏾 NEW: Import contracts blueprint
+    from app.routes.contracts import contracts_bp
+    from app.routes.user_profile import user_profile_bp
 
-    # ✅ Register all blueprints
     app.register_blueprint(clients_bp)
     app.register_blueprint(projects_bp)
     app.register_blueprint(metrics_bp)
@@ -81,9 +83,11 @@ def create_app():
     app.register_blueprint(drivers_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(auth_bp)
-    app.register_blueprint(contracts_bp)  # 👈🏾 NEW: Register contracts blueprint
+    app.register_blueprint(contracts_bp)
+    app.register_blueprint(user_profile_bp)
+    app.register_blueprint(chat_bp)  # ✅ Finally register chat blueprint
 
-    # Background task
+    # Morning message task
     def send_morning_message():
         print(f"Sending morning message at {datetime.now()}")
         openai.api_key = OPENAI_API_KEY

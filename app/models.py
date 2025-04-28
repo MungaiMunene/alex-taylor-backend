@@ -1,7 +1,7 @@
-# src/app/models.py
+# app/models.py
 
 from datetime import datetime
-from app import db  # this line is key!
+from app import db  # ✅ Important: use db from app/__init__.py
 
 # --- Association Table for Many-to-Many between Contracts and Drivers ---
 contract_driver_link = db.Table('contract_driver_link',
@@ -25,7 +25,6 @@ class Project(db.Model):
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
 
-    # Relationships
     metrics = db.relationship('Metric', backref='project', lazy=True)
     reports = db.relationship('Report', backref='project', lazy=True)
 
@@ -40,7 +39,7 @@ class Metric(db.Model):
     driver_id = db.Column(
         db.Integer,
         db.ForeignKey('productivity_driver.id', name='fk_metric_driver_id')
-    )  # Optional link to productivity driver
+    )
 
 # --- Report Model ---
 class Report(db.Model):
@@ -70,47 +69,37 @@ class Contract(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # Identity
     consultant_name = db.Column(db.String(100), nullable=False)
     consultant_contact = db.Column(db.String(150), nullable=False)
     project_name = db.Column(db.String(150), nullable=False)
     project_description = db.Column(db.Text, nullable=True)
 
-    # Timing
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     time_commitment_hours = db.Column(db.Integer)
     deliverable_milestones = db.Column(db.Text)
 
-    # Payment
     payment_rate = db.Column(db.String(100))
     payment_schedule = db.Column(db.String(100))
 
-    # Reporting
     reporting_frequency = db.Column(db.String(50))
     reporting_format = db.Column(db.String(50))
 
-    # Client/Stakeholder
     stakeholder_engagements = db.Column(db.String(200))
     stakeholder_reporting = db.Column(db.String(200))
 
-    # IP and Ownership
     deliverable_ownership = db.Column(db.String(200))
     knowledge_transfer_required = db.Column(db.Boolean, default=True)
 
-    # Legal
     confidentiality_terms = db.Column(db.Text)
     conflict_of_interest_required = db.Column(db.Boolean, default=False)
 
-    # Risk
     non_performance_penalties = db.Column(db.String(200))
     termination_notice_days = db.Column(db.Integer, default=14)
 
-    # System fields
     status = db.Column(db.String(20), default='Active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # --- Many-to-Many Relationship to Productivity Drivers ---
     drivers = db.relationship('ProductivityDriver', secondary=contract_driver_link, backref='contracts')
 
     def serialize(self):
@@ -148,6 +137,7 @@ class User(db.Model):
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     role = db.Column(db.String(50), default="Admin")
+
     honors = db.Column(db.String(250))
     life_areas = db.Column(db.Text)
     life_priorities_2025 = db.Column(db.Text)
@@ -156,7 +146,8 @@ class User(db.Model):
     daily_rhythm = db.Column(db.Text)
     long_term_integration = db.Column(db.Text)
     dynamic_growth_allowed = db.Column(db.Boolean, default=True)
-    status = db.Column(db.String(20), default='Active')
+
+    status = db.Column(db.String(20), default="Active")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def serialize(self):
