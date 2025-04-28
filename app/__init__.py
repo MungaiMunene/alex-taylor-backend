@@ -45,7 +45,7 @@ def create_app():
     CORS(app, resources={r"/api/*": {
         "origins": [
             "http://localhost:5174",  # Updated to match your actual Vite dev server port
-            "https://your-frontend-url.com"  # Placeholder for production (replace later)
+            "https://alex-taylor-frontend-8hbc.vercel.app"  # Your live frontend on Vercel
         ],
         "supports_credentials": True,
         "allow_headers": "*",
